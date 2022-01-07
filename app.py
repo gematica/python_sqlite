@@ -4,7 +4,7 @@ import json
 
 app = Flask(__name__)
 
-from products import products
+from notes import notes
 
 # Testing Route
 @app.route('/ping', methods=['GET'])
@@ -17,8 +17,8 @@ def home():
     return '<h1>Hola Mundo!!!</h1>'
 
 # Get Data Routes
-@app.route('/products')
-def getProducts():
+@app.route('/notes')
+def getnotes():
     conexion=sqlite3.connect("data.sqlite")
     cursor=conexion.execute("select * from notes")
     row_headers=[x[0] for x in cursor.description] #this will extract row headers
@@ -29,17 +29,17 @@ def getProducts():
         dict_from_list = dict(zip(row_headers, result))
         json_data.append(dict_from_list)
 
-    a = json.dumps(json_data)
+    #a = json.dumps(json_data)
     conexion.close()
-    # return jsonify(products)
-    #return jsonify({'products': a})
-    return a
+    return jsonify(json_data)
+    #return jsonify({'notes': a})
+    #return a
 
 
-@app.route('/products/<string:id>')
-def getProduct(id):
+@app.route('/notes/<string:id>')
+def getNote(id):
     conexion=sqlite3.connect("data.sqlite")
-    cursor=conexion.execute("select * from notes where id=" + str(id))
+    cursor=conexion.execute("select * from notes where id=" + id)
     row_headers=[x[0] for x in cursor.description] #this will extract row headers
     rv = cursor.fetchall()
 
@@ -48,46 +48,46 @@ def getProduct(id):
         dict_from_list = dict(zip(row_headers, result))
         json_data.append(dict_from_list)
 
-    a = json.dumps(json_data)
+    #a = json.dumps(json_data)
     conexion.close()
-    # return jsonify(products)
-    #return jsonify({'products': a})
-    return a
+    return jsonify(json_data)
+    #return jsonify({'notes': a})
+    #return a
 
 # Create Data Routes
-@app.route('/products', methods=['POST'])
-def addProduct():
-    new_product = {
+@app.route('/notes', methods=['POST'])
+def addNote():
+    new_note = {
         'name': request.json['name'],
         'price': request.json['price'],
         'quantity': 10
     }
-    products.append(new_product)
-    return jsonify({'products': products})
+    notes.append(new_note)
+    return jsonify({'notes': notes})
 
 # Update Data Route
-@app.route('/products/<string:product_name>', methods=['PUT'])
-def editProduct(product_name):
-    productsFound = [product for product in products if product['name'] == product_name]
-    if (len(productsFound) > 0):
-        productsFound[0]['name'] = request.json['name']
-        productsFound[0]['price'] = request.json['price']
-        productsFound[0]['quantity'] = request.json['quantity']
+@app.route('/notes/<string:note_name>', methods=['PUT'])
+def editNote(note_name):
+    notesFound = [note for note in notes if note['name'] == note_name]
+    if (len(notesFound) > 0):
+        notesFound[0]['name'] = request.json['name']
+        notesFound[0]['price'] = request.json['price']
+        notesFound[0]['quantity'] = request.json['quantity']
         return jsonify({
-            'message': 'Product Updated',
-            'product': productsFound[0]
+            'message': 'Note Updated',
+            'note': notesFound[0]
         })
-    return jsonify({'message': 'Product Not found'})
+    return jsonify({'message': 'Note Not found'})
 
 # DELETE Data Route
-@app.route('/products/<string:product_name>', methods=['DELETE'])
-def deleteProduct(product_name):
-    productsFound = [product for product in products if product['name'] == product_name]
-    if len(productsFound) > 0:
-        products.remove(productsFound[0])
+@app.route('/notes/<string:note_name>', methods=['DELETE'])
+def deleteNote(note_name):
+    notesFound = [note for note in notes if note['name'] == note_name]
+    if len(notesFound) > 0:
+        notes.remove(notesFound[0])
         return jsonify({
-            'message': 'Product Deleted',
-            'products': products
+            'message': 'Note Deleted',
+            'notes': notes
         })
 
 if __name__ == '__main__':
